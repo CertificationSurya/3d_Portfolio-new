@@ -1,15 +1,29 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import Loader from "../components/Loader";
+
 import Island from "../models/Island";
 import Sky from "../models/Sky";
 import Bird from "../models/Bird";
 import Plane from "../models/Plane";
 import HomeInfo from "../components/HomeInfo";
 
+import sakura from "../assets/sakura.mp3";
+import { soundoff, soundon } from "../assets/icons";
+
 const Home = () => {
-  const [currentStage, setCurrentStage] = useState();
+  const audioRef = useRef(new Audio(sakura));
+  audioRef.current.volume = 0.4;
+  audioRef.current.loop = true;
+
+  const [currentStage, setCurrentStage] = useState(1);
   const [isRotating, setIsRotating] = useState(false);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+
+  useEffect(() => {
+    if (isPlayingMusic) audioRef.current.play();
+    return () => audioRef.current.pause();
+  }, [isPlayingMusic]);
 
   const adjustIslandForScreenSize = () => {
     let screenScale = null;
@@ -37,7 +51,7 @@ const Home = () => {
       {/* popup */}
 
       <div className="absolute top-28 left-0 right-0 z-10 flex items-center justify-center">
-        { currentStage && <HomeInfo currentStage={currentStage}/>}
+        {currentStage && <HomeInfo currentStage={currentStage} />}
       </div>
 
       {/* 3D screen */}
@@ -68,13 +82,21 @@ const Home = () => {
             setCurrentStage={setCurrentStage}
           />
           <Plane
-            planeScale={planeScale}
-            planePosition={planePosition}
+            scale={planeScale}
+            position={planePosition}
             isRotating={isRotating}
             rotation={[0, 20, 0]}
           />
         </Suspense>
       </Canvas>
+      <div className="absolute bottom-2 left-2">
+        <img
+          src={isPlayingMusic ? soundoff : soundon}
+          alt="audio-control"
+          className="w-10 h-10 cursor-pointer object-contain"
+          onClick={()=> setIsPlayingMusic(!isPlayingMusic)}
+        />
+      </div>
     </section>
   );
 };

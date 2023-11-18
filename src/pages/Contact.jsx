@@ -3,6 +3,8 @@ import emailjs from "@emailjs/browser";
 import { Canvas } from "@react-three/fiber";
 import Loader from "../components/Loader";
 import Fox from "../models/Fox";
+import useAlert from "../hooks/useAlert";
+import Alert from "../components/Alert";
 
 const initialFormData = {
   name: "",
@@ -14,6 +16,7 @@ const Contact = () => {
   const formRef = useRef(null);
   const [form, setForm] = useState(initialFormData);
   const [isLoading, setIsLoading] = useState(false);
+  const { alert, showAlert, hideAlert } = useAlert()
 
   // animation state
   const [currentAnimation, setCurrentAnimation] = useState("idle");
@@ -41,16 +44,17 @@ const Contact = () => {
       )
       .then((res) => {
         setIsLoading(false);
-        // TODO: show success message
-        // TODO: hide an alert
-
+        showAlert({show: true, text: 'Message sent successfully!', type: 'success'})
+        
         setTimeout(()=> {
+          hideAlert()
           setCurrentAnimation('idle')
           setForm(initialFormData);
         },2500)
       })
       .catch((err) => {
         setIsLoading(false);
+        showAlert({show: true, text: 'I didn\'t receive your message !', type: 'danger'})
         console.log(err);
         setCurrentAnimation("idle");
         // TODO: show error message
@@ -60,7 +64,8 @@ const Contact = () => {
   const handleBlur = () => setCurrentAnimation("idle");
 
   return (
-    <section className="relative flex lg:flex-row flex-col max-container">
+    <section className="relative flex lg:flex-row flex-col max-container h-[100vh]">
+      {alert.show && <Alert {...alert}/>}
       <div className="flex-1 min-w-[50%] flex flex-col">
         <h1 className="head-text">Get in Touch</h1>
 
@@ -68,7 +73,7 @@ const Contact = () => {
           className="w-full flex flex-col gap-4 mt-14"
           onSubmit={handleSubmit}
         >
-          <label htmlFor="name" className="text-black-500 font-semibold">
+          <label className="text-black-500 font-semibold">
             Name
             <input
               type="text"
@@ -85,7 +90,7 @@ const Contact = () => {
             />
           </label>
 
-          <label htmlFor="email" className="text-black-500 font-semibold">
+          <label className="text-black-500 font-semibold">
             Email
             <input
               autoComplete="true"
@@ -102,7 +107,7 @@ const Contact = () => {
             />
           </label>
 
-          <label htmlFor="message" className="text-black-500 font-semibold">
+          <label className="text-black-500 font-semibold">
             Your Message
             <textarea
               name="message"
